@@ -22,11 +22,11 @@ class RedemptionResult(str, Enum):
 def parse_result_text(text: str) -> RedemptionResult:
     """Parse the redemption page response text into a result enum."""
     text_lower = text.lower()
-    if "redeemed successfully" in text_lower:
+    if "redeemed successfully" in text_lower or "claimed successfully" in text_lower or "success" in text_lower:
         return RedemptionResult.SUCCESS
-    if "code has been used" in text_lower or "already" in text_lower:
+    if "code has been used" in text_lower or "already" in text_lower or "claimed" in text_lower:
         return RedemptionResult.ALREADY_REDEEMED
-    if "invalid" in text_lower:
+    if "invalid" in text_lower or "expired" in text_lower or "unable to claim" in text_lower or "does not exist" in text_lower:
         return RedemptionResult.INVALID
     return RedemptionResult.ERROR
 
@@ -77,27 +77,27 @@ def redeem_code(code: str, accounts: list[dict], on_account_done=None) -> dict[s
             name = account["name"]
             game_id = account["game_id"]
             try:
-                # Fill code field
-                page.fill('input[name="code"], input[placeholder*="code" i]', code)
-                # Fill UID field
-                page.fill('input[name="uid"], input[placeholder*="uid" i], input[placeholder*="id" i]', game_id)
-                # Submit
-                page.click('button[type="submit"], button:has-text("Confirm"), button:has-text("Redeem")')
-                # Wait for result modal/toast
-                result_el = page.wait_for_selector(
-                    '.result-message, .toast, .modal-body, [class*="result"], [class*="message"]',
-                    timeout=8000
-                )
-                result_text = result_el.inner_text()
+                # Step 1: Enter Player ID and click Login
+                page.fill('input[placeholder="Player ID"]', game_id)
+                page.click('div.login_btn')
+                page.wait_for_timeout(1500)
+
+                # Step 2: Enter Gift Code and click Confirm
+                page.fill('input[placeholder="Enter Gift Code"]', code)
+                page.click('div.exchange_btn')
+
+                # Wait for result modal and read the message text
+                page.wait_for_selector('div.message_modal', timeout=8000)
+                result_text = page.locator('p.msg').inner_text()
                 result = parse_result_text(result_text)
-                logger.info(f"Code {code} | {name}: {result.value}")
+                logger.info(f"Code {code} | {name}: {result.value} — '{result_text.strip()}'")
                 results[name] = result.value
 
-                # Dismiss modal if present
-                try:
-                    page.click('button:has-text("OK"), button:has-text("Close"), .modal button', timeout=2000)
-                except Exception:
-                    pass
+                # Dismiss modal, then reload page for next account
+                page.click('div.confirm_btn')
+                page.wait_for_timeout(500)
+                page.reload()
+                page.wait_for_load_state("networkidle", timeout=10000)
 
             except PlaywrightTimeout as e:
                 _save_screenshot(page, f"timeout_{name.replace(' ', '_')}")

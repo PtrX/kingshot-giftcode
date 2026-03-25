@@ -5,7 +5,7 @@ import requests
 from datetime import datetime, timedelta, timezone
 
 try:
-    from firecrawl import FirecrawlApp
+    from firecrawl.v1.client import V1FirecrawlApp as FirecrawlApp
 except ImportError:
     FirecrawlApp = None
 
@@ -71,9 +71,9 @@ def fetch_firecrawl_codes(query: str, urls: list[str], days: int = 30) -> list[s
 
     # Twitter/X search
     try:
-        result = app.search(query, {"limit": 10})
-        for item in result.get("data", []):
-            content = item.get("markdown", "") + " " + item.get("title", "")
+        result = app.search(query, limit=10)
+        for item in result.data or []:
+            content = (getattr(item, "markdown", "") or "") + " " + (getattr(item, "title", "") or "")
             codes.extend(extract_codes(content))
     except Exception as e:
         status = getattr(getattr(e, "response", None), "status_code", None)
@@ -84,8 +84,8 @@ def fetch_firecrawl_codes(query: str, urls: list[str], days: int = 30) -> list[s
     # Aggregator URLs
     for url in urls:
         try:
-            result = app.scrape_url(url, {"formats": ["markdown"]})
-            content = result.get("markdown", "")
+            result = app.scrape_url(url, formats=["markdown"])
+            content = getattr(result, "markdown", "") or ""
             codes.extend(extract_codes(content))
         except Exception as e:
             status = getattr(getattr(e, "response", None), "status_code", None)

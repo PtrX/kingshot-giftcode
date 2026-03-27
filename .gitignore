@@ -2,3 +2,5 @@
 *.pyc
 __pycache__/
 redeemed.json
+config.json
+com.peter.kingshot.plist

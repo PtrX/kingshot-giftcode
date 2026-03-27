@@ -1,0 +1,18 @@
+{
+  "accounts": [
+    {"name": "Main", "game_id": "YOUR_GAME_ID_1"},
+    {"name": "Second", "game_id": "YOUR_GAME_ID_2"}
+  ],
+  "telegram": {
+    "chat_id": "YOUR_TELEGRAM_CHAT_ID"
+  },
+  "scraper": {
+    "subreddit": "Kingshot",
+    "aggregator_urls": [
+      "https://www.gameskeys.net/kingshot-gift-codes/",
+      "https://www.eldorado.gg/blog/kingshot-codes"
+    ],
+    "twitter_query": "Kingshot gift code",
+    "code_age_days": 30
+  }
+}

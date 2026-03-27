@@ -22,7 +22,7 @@ class RedemptionResult(str, Enum):
 def parse_result_text(text: str) -> RedemptionResult:
     """Parse the redemption page response text into a result enum."""
     text_lower = text.lower()
-    if "redeemed successfully" in text_lower or "claimed successfully" in text_lower or "success" in text_lower:
+    if "redeemed successfully" in text_lower or "claimed successfully" in text_lower or "success" in text_lower or "claim the rewards" in text_lower:
         return RedemptionResult.SUCCESS
     if "code has been used" in text_lower or "already" in text_lower or "claimed" in text_lower:
         return RedemptionResult.ALREADY_REDEEMED

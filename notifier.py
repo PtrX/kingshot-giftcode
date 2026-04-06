@@ -7,7 +7,7 @@ from datetime import date
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 
 STATUS_EMOJI = {
-    "success": "✅ Erfolg",
+    "success": "✅ Erfolgreich",
     "already_redeemed": "❌ Bereits eingelöst",
     "invalid": "❌ Ungültig",
     "error": "❌ Fehler",

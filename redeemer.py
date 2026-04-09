@@ -93,11 +93,14 @@ def redeem_code(code: str, accounts: list[dict], on_account_done=None) -> dict[s
                 logger.info(f"Code {code} | {name}: {result.value} — '{result_text.strip()}'")
                 results[name] = result.value
 
-                # Dismiss modal, then reload page for next account
+                # Dismiss modal, then log out for next account
                 page.click('div.confirm_btn')
                 page.wait_for_timeout(500)
-                page.reload()
-                page.wait_for_load_state("networkidle", timeout=10000)
+
+                # Log out current player so next account can log in
+                if account != accounts[-1]:
+                    page.click('div.exit_icon')
+                    page.wait_for_selector('input[placeholder="Player ID"]', timeout=8000)
 
             except PlaywrightTimeout as e:
                 _save_screenshot(page, f"timeout_{name.replace(' ', '_')}")

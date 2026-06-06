@@ -1,6 +1,5 @@
 import re
 import logging
-import keyring
 import requests
 from datetime import datetime, timedelta, timezone
 
@@ -59,9 +58,20 @@ def fetch_reddit_codes(subreddit: str, days: int = 30) -> list[str]:
     return codes
 
 
-def fetch_firecrawl_codes(query: str, urls: list[str], days: int = 30) -> list[str]:
+def _get_firecrawl_key(config: dict) -> str | None:
+    key = config.get("scraper", {}).get("firecrawl_api_key")
+    if key:
+        return key
+    try:
+        import keyring
+        return keyring.get_password("kingshot", "firecrawl_api_key")
+    except Exception:
+        return None
+
+
+def fetch_firecrawl_codes(query: str, urls: list[str], days: int = 30, config: dict = None) -> list[str]:
     """Fetch codes from Twitter/X search and aggregator URLs via Firecrawl."""
-    api_key = keyring.get_password("kingshot", "firecrawl_api_key")
+    api_key = _get_firecrawl_key(config or {})
     if not api_key or FirecrawlApp is None:
         logger.warning("Firecrawl not available (no API key or package not installed)")
         return []
@@ -105,7 +115,7 @@ def get_new_codes(redeemed: dict, config: dict) -> list[str]:
 
     all_codes = []
     all_codes.extend(fetch_reddit_codes(subreddit, days))
-    all_codes.extend(fetch_firecrawl_codes(query, agg_urls, days))
+    all_codes.extend(fetch_firecrawl_codes(query, agg_urls, days, config))
 
     seen = set()
     new_codes = []

@@ -1,5 +1,4 @@
 # notifier.py
-import keyring
 import requests
 from datetime import date
 
@@ -14,12 +13,19 @@ STATUS_EMOJI = {
 }
 
 
-def _get_token() -> str:
-    return keyring.get_password("kingshot", "telegram_token")
+def _get_token(config: dict) -> str:
+    token = config.get("telegram", {}).get("token")
+    if token:
+        return token
+    try:
+        import keyring
+        return keyring.get_password("kingshot", "telegram_token")
+    except Exception:
+        return None
 
 
 def _send(text: str, config: dict) -> None:
-    token = _get_token()
+    token = _get_token(config)
     chat_id = config["telegram"]["chat_id"]
     url = TELEGRAM_API.format(token=token)
     response = requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"})

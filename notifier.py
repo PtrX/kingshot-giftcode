@@ -54,5 +54,7 @@ def send_success(results: dict, config: dict) -> None:
 
 
 def send_critical_error(message: str, config: dict) -> None:
-    text = f"🚨 Kingshot Automation Fehler\nFehler: {message}\nDiagnose: ~/Library/Logs/kingshot.log"
+    from pathlib import Path
+    log_path = "~/Library/Logs/kingshot.log" if (Path.home() / "Library").exists() else "/var/log/kingshot.log"
+    text = f"🚨 Kingshot Automation Fehler\nFehler: {message}\nDiagnose: {log_path}"
     _send(text, config)

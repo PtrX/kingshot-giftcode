@@ -9,7 +9,12 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 logger = logging.getLogger(__name__)
 
 REDEMPTION_URL = "https://ks-giftcode.centurygame.com"
-SCREENSHOT_DIR = Path.home() / "Library" / "Logs" / "kingshot-screenshots"
+_home = Path.home()
+SCREENSHOT_DIR = (
+    Path("/var/log/kingshot-screenshots")
+    if not (_home / "Library").exists()
+    else _home / "Library" / "Logs" / "kingshot-screenshots"
+)
 
 
 class RedemptionResult(str, Enum):

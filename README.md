@@ -2,6 +2,10 @@
 
 Automatically scrapes new gift codes for the mobile game **Kingshot** and redeems them for one or more accounts — fully headless, runs daily via macOS launchd, and notifies you via Telegram.
 
+## Why this exists
+
+Gift codes are easy to miss and often expire quickly. This project turns a repetitive manual check into a small, auditable automation pipeline: discover codes, de-duplicate them, redeem them for configured accounts, and report the result.
+
 ## What it does
 
 1. **Scrapes** new gift codes from multiple sources:
@@ -18,6 +22,10 @@ Automatically scrapes new gift codes for the mobile game **Kingshot** and redeem
 - macOS (launchd scheduling) — the scripts run manually on other platforms too
 - A [Firecrawl](https://www.firecrawl.dev/) API key (optional — Reddit scraping works without it)
 - A Telegram bot token and chat ID (optional — for notifications)
+
+## Responsible use
+
+Use this only for accounts you own or are explicitly allowed to manage. The automation keeps request volume low and is designed for personal convenience, not bulk abuse.
 
 ## Installation
 
@@ -59,7 +67,14 @@ Edit `config.json`:
     "subreddit": "Kingshot",
     "aggregator_urls": [
       "https://www.gameskeys.net/kingshot-gift-codes/",
-      "https://www.eldorado.gg/blog/kingshot-codes"
+      "https://www.eldorado.gg/blog/kingshot-codes",
+      "https://kingshot.net/gift-codes",
+      "https://kingshotwiki.com/giftcodes/",
+      "https://www.gamsgo.com/blog/kingshot-gift-code",
+      "https://kingshotmastery.com/guides/kingshot-gift-codes",
+      "https://www.lootbar.com/blog/en/newest-kingshot-gift-codes.html",
+      "https://www.gamesradar.com/games/strategy/kingshot-codes-gift/",
+      "https://boostbot.org/blog/kingshot-gift-codes/"
     ],
     "twitter_query": "Kingshot gift code",
     "code_age_days": 30
@@ -110,6 +125,7 @@ launchctl load ~/Library/LaunchAgents/com.kingshot.plist
 
 Logs are written to `~/Library/Logs/kingshot.log`.
 Screenshots of failed redemptions are saved to `~/Library/Logs/kingshot-screenshots/`.
+Each run logs a source heartbeat like `Scraper summary: reddit=0 firecrawl=3 candidates=3 new=1`.
 
 ## Project structure
 
@@ -137,9 +153,21 @@ Code: FIREFRIDAY
 To create a Telegram bot: message [@BotFather](https://t.me/BotFather) on Telegram and follow the `/newbot` flow.
 To get your chat ID: message [@userinfobot](https://t.me/userinfobot).
 
+## Security Notes
+
+- Real account IDs belong in `config.json`, which should stay local and uncommitted.
+- API keys and Telegram tokens are read from the macOS keychain.
+- Runtime files such as `redeemed.json`, logs, and screenshots should not be committed.
+
 ## Running tests
 
 ```bash
 source .venv/bin/activate
 pytest
 ```
+
+## Lessons Learned
+
+- Browser automation is more stable when each account starts from a clean session.
+- Personal automation benefits from explicit state files; de-duplication makes retries safe.
+- Notifications are more useful when they include both the discovered code and the per-account result.
